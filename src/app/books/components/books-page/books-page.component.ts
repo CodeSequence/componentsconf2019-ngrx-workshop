@@ -6,7 +6,7 @@ import {
   calculateBooksGrossEarnings
 } from "src/app/shared/models/book.model";
 import { BooksService } from "src/app/shared/services/book.service";
-import { BooksPageActions } from "../../actions";
+import { BooksPageActions, BooksApiActions } from "../../actions";
 
 @Component({
   selector: "app-books",
@@ -34,6 +34,8 @@ export class BooksPageComponent implements OnInit {
     this.booksService.all().subscribe(books => {
       this.books = books;
       this.updateTotals(books);
+
+      this.store.dispatch(BooksApiActions.booksLoaded({ books }));
     });
   }
 
@@ -66,18 +68,22 @@ export class BooksPageComponent implements OnInit {
   }
 
   saveBook(book: BookModel) {
-    this.booksService.create(book).subscribe(() => {
+    this.booksService.create(book).subscribe(book => {
       this.getBooks();
       this.removeSelectedBook();
+
+      this.store.dispatch(BooksApiActions.bookCreated({ book }));
     });
 
     this.store.dispatch(BooksPageActions.createBook({ book }));
   }
 
   updateBook(book: BookModel) {
-    this.booksService.update(book.id, book).subscribe(() => {
+    this.booksService.update(book.id, book).subscribe(book => {
       this.getBooks();
       this.removeSelectedBook();
+
+      this.store.dispatch(BooksApiActions.bookUpdated({ book }));
     });
 
     this.store.dispatch(
@@ -89,6 +95,8 @@ export class BooksPageComponent implements OnInit {
     this.booksService.delete(book.id).subscribe(() => {
       this.getBooks();
       this.removeSelectedBook();
+
+      this.store.dispatch(BooksApiActions.bookDeleted({ bookId: book.id }));
     });
 
     this.store.dispatch(BooksPageActions.deleteBook({ bookId: book.id }));
