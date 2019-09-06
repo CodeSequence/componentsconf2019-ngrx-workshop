@@ -1,9 +1,12 @@
 import { Component, OnInit } from "@angular/core";
+import { Store } from "@ngrx/store";
+import { State } from "src/app/shared/state";
 import {
   BookModel,
   calculateBooksGrossEarnings
 } from "src/app/shared/models/book.model";
 import { BooksService } from "src/app/shared/services/book.service";
+import { BooksPageActions } from "../../actions";
 
 @Component({
   selector: "app-books",
@@ -15,11 +18,16 @@ export class BooksPageComponent implements OnInit {
   currentBook: BookModel;
   total: number;
 
-  constructor(private booksService: BooksService) {}
+  constructor(
+    private booksService: BooksService,
+    private store: Store<State>
+  ) {}
 
   ngOnInit() {
     this.getBooks();
     this.removeSelectedBook();
+
+    this.store.dispatch(BooksPageActions.enter());
   }
 
   getBooks() {
@@ -35,6 +43,8 @@ export class BooksPageComponent implements OnInit {
 
   onSelect(book: BookModel) {
     this.currentBook = book;
+
+    this.store.dispatch(BooksPageActions.selectBook({ bookId: book.id }));
   }
 
   onCancel() {
@@ -43,6 +53,8 @@ export class BooksPageComponent implements OnInit {
 
   removeSelectedBook() {
     this.currentBook = null;
+
+    this.store.dispatch(BooksPageActions.clearSelectedBook());
   }
 
   onSave(book: BookModel) {
@@ -58,6 +70,8 @@ export class BooksPageComponent implements OnInit {
       this.getBooks();
       this.removeSelectedBook();
     });
+
+    this.store.dispatch(BooksPageActions.createBook({ book }));
   }
 
   updateBook(book: BookModel) {
@@ -65,6 +79,10 @@ export class BooksPageComponent implements OnInit {
       this.getBooks();
       this.removeSelectedBook();
     });
+
+    this.store.dispatch(
+      BooksPageActions.updateBook({ bookId: book.id, changes: book })
+    );
   }
 
   onDelete(book: BookModel) {
@@ -72,5 +90,7 @@ export class BooksPageComponent implements OnInit {
       this.getBooks();
       this.removeSelectedBook();
     });
+
+    this.store.dispatch(BooksPageActions.deleteBook({ bookId: book.id }));
   }
 }
