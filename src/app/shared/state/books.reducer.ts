@@ -1,5 +1,8 @@
-import { createReducer, on } from "@ngrx/store";
-import { BookModel } from "src/app/shared/models/book.model";
+import { createReducer, on, createSelector } from "@ngrx/store";
+import {
+  BookModel,
+  calculateBooksGrossEarnings
+} from "src/app/shared/models/book.model";
 import { BooksPageActions, BooksApiActions } from "src/app/books/actions";
 
 const createBook = (books: BookModel[], book: BookModel) => [...books, book];
@@ -58,4 +61,16 @@ export const booksReducer = createReducer(
       activeBookId: null
     };
   })
+);
+
+export const selectAll = (state: State) => state.collection;
+export const selectActiveBookId = (state: State) => state.activeBookId;
+export const selectActiveBook = createSelector(
+  selectAll,
+  selectActiveBookId,
+  (books, activeBookId) => books.find(book => book.id === activeBookId) || null
+);
+export const selectEarningsTotals = createSelector(
+  selectAll,
+  calculateBooksGrossEarnings
 );
